@@ -1,19 +1,7 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: my-postgres
-    environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    restart: unless-stopped
-
+  
   cache-requester:
     image: appropriate/curl
     container_name: cache-requester
@@ -21,6 +9,3 @@ services:
       # - iot-device
     command: /bin/sh -c "while true; do curl -s -X POST https://nonelectrically-jocund-scot.ngrok-free.dev/api/v1/cache/process; sleep 120; done"
     restart: unless-stopped
-
-volumes:
-  pgdata:
