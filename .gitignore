@@ -7,3 +7,7 @@ ulrs.txt
 test-api.sh
 *.md
 README.txt
+/pico-pi
+
+docker-compose.yml
+Dockerfile

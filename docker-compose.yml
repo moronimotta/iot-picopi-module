@@ -1,16 +1,26 @@
+version: '3.8'
+
 services:
-  redis:
-    image: redis:7-alpine
-    container_name: my-redis-instance
+  postgres:
+    image: postgres:15-alpine
+    container_name: my-postgres
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
     ports:
-      - "6379:6379"
+      - "5432:5432"
     volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
+      - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  cache-requester:
+    image: appropriate/curl
+    container_name: cache-requester
+    # depends_on:
+      # - iot-device
+    command: /bin/sh -c "while true; do curl -s -X POST https://nonelectrically-jocund-scot.ngrok-free.dev/api/v1/cache/process; sleep 120; done"
+    restart: unless-stopped
 
-# make a request every 2 minutes to cahce process url
-  
 volumes:
-  redis_data:
+  pgdata:
