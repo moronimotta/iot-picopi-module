@@ -20,7 +20,6 @@ func NewDeviceUseCase(deviceRepo repositories.DeviceRepository, deviceDataRepo r
 	}
 }
 
-// CreateDevice creates a new device
 func (uc *DeviceUseCase) CreateDevice(device *entities.Device) error {
 	if device.Name == "" {
 		return errors.New("device name is required")
@@ -31,7 +30,6 @@ func (uc *DeviceUseCase) CreateDevice(device *entities.Device) error {
 	return uc.DeviceRepo.Create(device)
 }
 
-// GetDevice retrieves a device by ID
 func (uc *DeviceUseCase) GetDevice(id string) (*entities.Device, error) {
 	if id == "" {
 		return nil, errors.New("device id is required")
@@ -39,24 +37,20 @@ func (uc *DeviceUseCase) GetDevice(id string) (*entities.Device, error) {
 	return uc.DeviceRepo.GetByID(id)
 }
 
-// GetAllDevices retrieves all devices
 func (uc *DeviceUseCase) GetAllDevices() ([]entities.Device, error) {
 	return uc.DeviceRepo.GetAll()
 }
 
-// UpdateDevice updates a device
 func (uc *DeviceUseCase) UpdateDevice(device *entities.Device) error {
 	if device.ID == "" {
 		return errors.New("device id is required")
 	}
 
-	// Check if device exists
 	existing, err := uc.DeviceRepo.GetByID(device.ID)
 	if err != nil {
 		return errors.New("device not found")
 	}
 
-	// Update only provided fields
 	if device.Name != "" {
 		existing.Name = device.Name
 	}
@@ -70,13 +64,11 @@ func (uc *DeviceUseCase) UpdateDevice(device *entities.Device) error {
 	return uc.DeviceRepo.Update(existing)
 }
 
-// DeleteDevice deletes a device
 func (uc *DeviceUseCase) DeleteDevice(id string) error {
 	if id == "" {
 		return errors.New("device id is required")
 	}
 
-	// Check if device exists
 	_, err := uc.DeviceRepo.GetByID(id)
 	if err != nil {
 		return errors.New("device not found")
@@ -87,13 +79,11 @@ func (uc *DeviceUseCase) DeleteDevice(id string) error {
 
 // ============= DeviceData Use Cases =============
 
-// CreateDeviceData creates new device data
 func (uc *DeviceUseCase) CreateDeviceData(data *entities.DeviceData) error {
 	if data.DeviceID == "" {
 		return errors.New("device_id is required")
 	}
 
-	// Verify device exists
 	_, err := uc.DeviceRepo.GetByID(data.DeviceID)
 	if err != nil {
 		return errors.New("device not found")
@@ -102,7 +92,6 @@ func (uc *DeviceUseCase) CreateDeviceData(data *entities.DeviceData) error {
 	return uc.DeviceDataRepo.Create(data)
 }
 
-// GetDeviceData retrieves device data by ID
 func (uc *DeviceUseCase) GetDeviceData(id string) (*entities.DeviceData, error) {
 	if id == "" {
 		return nil, errors.New("data id is required")
@@ -110,12 +99,10 @@ func (uc *DeviceUseCase) GetDeviceData(id string) (*entities.DeviceData, error) 
 	return uc.DeviceDataRepo.GetByID(id)
 }
 
-// GetAllDeviceData retrieves all device data
 func (uc *DeviceUseCase) GetAllDeviceData() ([]entities.DeviceData, error) {
 	return uc.DeviceDataRepo.GetAll()
 }
 
-// GetDeviceDataByDeviceID retrieves all data for a specific device
 func (uc *DeviceUseCase) GetDeviceDataByDeviceID(deviceID string) ([]entities.DeviceData, error) {
 	if deviceID == "" {
 		return nil, errors.New("device_id is required")
@@ -123,19 +110,16 @@ func (uc *DeviceUseCase) GetDeviceDataByDeviceID(deviceID string) ([]entities.De
 	return uc.DeviceDataRepo.GetByDeviceID(deviceID)
 }
 
-// UpdateDeviceData updates device data
 func (uc *DeviceUseCase) UpdateDeviceData(data *entities.DeviceData) error {
 	if data.ID == "" {
 		return errors.New("data id is required")
 	}
 
-	// Check if data exists
 	existing, err := uc.DeviceDataRepo.GetByID(data.ID)
 	if err != nil {
 		return errors.New("device data not found")
 	}
 
-	// Update fields
 	if data.Temperature != 0 {
 		existing.Temperature = data.Temperature
 	}
@@ -149,13 +133,11 @@ func (uc *DeviceUseCase) UpdateDeviceData(data *entities.DeviceData) error {
 	return uc.DeviceDataRepo.Update(existing)
 }
 
-// DeleteDeviceData deletes device data
 func (uc *DeviceUseCase) DeleteDeviceData(id string) error {
 	if id == "" {
 		return errors.New("data id is required")
 	}
 
-	// Check if data exists
 	_, err := uc.DeviceDataRepo.GetByID(id)
 	if err != nil {
 		return errors.New("device data not found")
@@ -164,7 +146,6 @@ func (uc *DeviceUseCase) DeleteDeviceData(id string) error {
 	return uc.DeviceDataRepo.Delete(id)
 }
 
-// GetDevicesByUserID retrieves all devices for a specific user
 func (uc *DeviceUseCase) GetDevicesByUserID(userID string) ([]entities.Device, error) {
 	if userID == "" {
 		return nil, errors.New("user_id is required")
@@ -174,7 +155,6 @@ func (uc *DeviceUseCase) GetDevicesByUserID(userID string) ([]entities.Device, e
 
 // ============= DeviceModule Use Cases =============
 
-// CreateDeviceModule creates a new device module
 func (uc *DeviceUseCase) CreateDeviceModule(module *entities.DeviceModule) error {
 	if module.DeviceID == "" {
 		return errors.New("device_id is required")
@@ -183,7 +163,6 @@ func (uc *DeviceUseCase) CreateDeviceModule(module *entities.DeviceModule) error
 		return errors.New("user_id is required")
 	}
 
-	// Verify device exists
 	_, err := uc.DeviceRepo.GetByID(module.DeviceID)
 	if err != nil {
 		return errors.New("device not found")
@@ -192,7 +171,6 @@ func (uc *DeviceUseCase) CreateDeviceModule(module *entities.DeviceModule) error
 	return uc.DeviceModuleRepo.Create(module)
 }
 
-// GetDeviceModule retrieves a device module by ID
 func (uc *DeviceUseCase) GetDeviceModule(id string) (*entities.DeviceModule, error) {
 	if id == "" {
 		return nil, errors.New("module id is required")
@@ -200,12 +178,10 @@ func (uc *DeviceUseCase) GetDeviceModule(id string) (*entities.DeviceModule, err
 	return uc.DeviceModuleRepo.GetByID(id)
 }
 
-// GetAllDeviceModules retrieves all device modules
 func (uc *DeviceUseCase) GetAllDeviceModules() ([]entities.DeviceModule, error) {
 	return uc.DeviceModuleRepo.GetAll()
 }
 
-// GetDeviceModulesByUserID retrieves all device modules for a specific user
 func (uc *DeviceUseCase) GetDeviceModulesByUserID(userID string) ([]entities.DeviceModule, error) {
 	if userID == "" {
 		return nil, errors.New("user_id is required")
@@ -213,7 +189,6 @@ func (uc *DeviceUseCase) GetDeviceModulesByUserID(userID string) ([]entities.Dev
 	return uc.DeviceModuleRepo.GetByUserID(userID)
 }
 
-// GetDeviceModulesByDeviceID retrieves all modules for a specific device
 func (uc *DeviceUseCase) GetDeviceModulesByDeviceID(deviceID string) ([]entities.DeviceModule, error) {
 	if deviceID == "" {
 		return nil, errors.New("device_id is required")
@@ -221,19 +196,16 @@ func (uc *DeviceUseCase) GetDeviceModulesByDeviceID(deviceID string) ([]entities
 	return uc.DeviceModuleRepo.GetByDeviceID(deviceID)
 }
 
-// UpdateDeviceModule updates a device module
 func (uc *DeviceUseCase) UpdateDeviceModule(module *entities.DeviceModule) error {
 	if module.ID == "" {
 		return errors.New("module id is required")
 	}
 
-	// Check if module exists
 	existing, err := uc.DeviceModuleRepo.GetByID(module.ID)
 	if err != nil {
 		return errors.New("device module not found")
 	}
 
-	// Update fields
 	if module.Name != "" {
 		existing.Name = module.Name
 	}
@@ -247,13 +219,10 @@ func (uc *DeviceUseCase) UpdateDeviceModule(module *entities.DeviceModule) error
 	return uc.DeviceModuleRepo.Update(existing)
 }
 
-// DeleteDeviceModule deletes a device module
 func (uc *DeviceUseCase) DeleteDeviceModule(id string) error {
 	if id == "" {
 		return errors.New("module id is required")
 	}
-
-	// Check if module exists
 	_, err := uc.DeviceModuleRepo.GetByID(id)
 	if err != nil {
 		return errors.New("device module not found")

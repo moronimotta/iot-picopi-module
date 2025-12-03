@@ -8,8 +8,6 @@ import (
 	"iot-server/services"
 	"iot-server/usecases"
 	"iot-server/ws"
-	"os"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,20 +41,8 @@ func (s *Server) Start() {
 	deviceUseCase := usecases.NewDeviceUseCase(deviceRepo, deviceDataRepo, deviceModuleRepo)
 	commandsUseCase := usecases.NewCommandsUseCase(repositories.NewCommandPgRepository(s.db))
 
-	// Initialize data processor (cache) with thresholds from env or defaults
-	tempThresh := 0.5
-	humidThresh := 2.0
-	if v, ok := os.LookupEnv("TEMP_THRESHOLD"); ok {
-		if f, err := strconv.ParseFloat(v, 64); err == nil {
-			tempThresh = f
-		}
-	}
-	if v, ok := os.LookupEnv("HUMID_THRESHOLD"); ok {
-		if f, err := strconv.ParseFloat(v, 64); err == nil {
-			humidThresh = f
-		}
-	}
-	processor := services.NewDataProcessor(s.db, tempThresh, humidThresh)
+	// Initialize data processor (cache) without thresholds; store all cached points
+	processor := services.NewDataProcessor(s.db, 0, 0)
 
 	// Initialize handlers
 	deviceHandler := httpHandler.NewDeviceHandler(deviceUseCase)
@@ -74,23 +60,23 @@ func (s *Server) Start() {
 		// Device routes
 		devices := api.Group("/devices")
 		{
-			devices.POST("", deviceHandler.CreateDevice)                                // Create device
-			devices.GET("", deviceHandler.GetAllDevices)                                // Get all devices
-			devices.GET("/:id/data", deviceHandler.GetDeviceDataByDeviceID)             // Get all data for a device (must come before /:id)
-			devices.GET("/:id/modules", deviceModuleHandler.GetDeviceModulesByDeviceID) // Get all modules for a device
-			devices.GET("/:id", deviceHandler.GetDevice)                                // Get device by ID
-			devices.PUT("/:id", deviceHandler.UpdateDevice)                             // Update device
-			devices.DELETE("/:id", deviceHandler.DeleteDevice)                          // Delete device
+			devices.POST("", deviceHandler.CreateDevice)
+			devices.GET("", deviceHandler.GetAllDevices)
+			devices.GET("/:id/data", deviceHandler.GetDeviceDataByDeviceID)
+			devices.GET("/:id/modules", deviceModuleHandler.GetDeviceModulesByDeviceID)
+			devices.GET("/:id", deviceHandler.GetDevice)
+			devices.PUT("/:id", deviceHandler.UpdateDevice)
+			devices.DELETE("/:id", deviceHandler.DeleteDevice)
 		}
 
 		// Device data routes
 		deviceData := api.Group("/device-data")
 		{
-			deviceData.POST("", deviceHandler.CreateDeviceData)       // Create device data
-			deviceData.GET("", deviceHandler.GetAllDeviceData)        // Get all device data
-			deviceData.GET("/:id", deviceHandler.GetDeviceData)       // Get device data by ID
-			deviceData.PUT("/:id", deviceHandler.UpdateDeviceData)    // Update device data
-			deviceData.DELETE("/:id", deviceHandler.DeleteDeviceData) // Delete device data
+			deviceData.POST("", deviceHandler.CreateDeviceData)
+			deviceData.GET("", deviceHandler.GetAllDeviceData)
+			deviceData.GET("/:id", deviceHandler.GetDeviceData)
+			deviceData.PUT("/:id", deviceHandler.UpdateDeviceData)
+			deviceData.DELETE("/:id", deviceHandler.DeleteDeviceData)
 		}
 
 		// Device module routes
@@ -124,14 +110,10 @@ func (s *Server) Start() {
 		api.GET("/commands/poll", cmdHandler.Poll)                   // Devices fetch pending commands
 		api.POST("/command-responses", cmdHandler.Ack)               // Devices acknowledge
 
-		// Backward compatibility
-		api.POST("/process-cache", cacheHandler.ProcessCache) // Trigger cache processing (deprecated, use /cache/process)
 	}
 
-	// WS endpoint for devices to connect
 	s.app.GET("/ws", wsHandler.HandleDeviceWS)
 
-	// Start server
 	if err := s.app.Run("0.0.0.0:3536"); err != nil {
 		panic(err)
 	}

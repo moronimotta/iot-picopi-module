@@ -7,5 +7,5 @@ services:
     container_name: cache-requester
     # depends_on:
       # - iot-device
-    command: /bin/sh -c "while true; do curl -s -X POST https://nonelectrically-jocund-scot.ngrok-free.dev/api/v1/cache/process; sleep 120; done"
+    command: /bin/sh -c "while true; do curl -s -X POST https://iot-picopi-module.onrender.com/api/v1/cache/process; sleep 10; done"
     restart: unless-stopped

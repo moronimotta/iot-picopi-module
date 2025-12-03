@@ -14,9 +14,9 @@ type DataProcessor struct {
 	interval time.Duration
 }
 
-func NewDataProcessor(database db.Database, tempThreshold, humidThreshold float64) *DataProcessor {
+func NewDataProcessor(database db.Database, _ float64, _ float64) *DataProcessor {
 	return &DataProcessor{
-		cache:    cache.NewDeviceCache(tempThreshold, humidThreshold),
+		cache:    cache.NewDeviceCache(),
 		database: database,
 		interval: 5 * time.Minute,
 	}
@@ -32,39 +32,33 @@ func (dp *DataProcessor) Start() {
 }
 
 func (dp *DataProcessor) ProcessCachedData() {
-	// Get significant changes for all devices
-	significantChanges := dp.cache.GetSignificantChanges()
-
-	// Prepare bulk insert
+	raw := dp.cache.GetAllCachedData()
 	var allData []entities.DeviceData
-	for _, deviceData := range significantChanges {
-		allData = append(allData, deviceData...)
-	}
-
-	// Bulk insert if we have data
-	if len(allData) > 0 {
-		if err := dp.database.GetDB().Create(&allData).Error; err != nil {
-			log.Printf("Error bulk inserting device data: %v", err)
-		} else {
-			log.Printf("Successfully inserted %d data points", len(allData))
+	for _, points := range raw {
+		for _, p := range points {
+			allData = append(allData, p.Data)
 		}
 	}
-
-	// Clear the cache after processing
+	if len(allData) == 0 {
+		log.Printf("No cached data to process")
+		return
+	}
+	if err := dp.database.GetDB().Create(&allData).Error; err != nil {
+		log.Printf("Error bulk inserting %d data points: %v", len(allData), err)
+	} else {
+		log.Printf("Inserted %d cached data points (unfiltered)", len(allData))
+	}
 	dp.cache.ClearCache()
 }
 
-// AddDataPoint adds a new data point to the cache
 func (dp *DataProcessor) AddDataPoint(data entities.DeviceData) {
 	dp.cache.AddDataPoint(data)
 }
 
-// GetAllCachedData returns all data currently in cache
 func (dp *DataProcessor) GetAllCachedData() map[string][]cache.DeviceDataPoint {
 	return dp.cache.GetAllCachedData()
 }
 
-// GetCacheStats returns statistics about the cache
 func (dp *DataProcessor) GetCacheStats() map[string]interface{} {
 	return dp.cache.GetCacheStats()
 }
