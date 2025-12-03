@@ -51,6 +51,7 @@ func (s *Server) Start() {
 	// WebSocket manager and handler
 	manager := ws.NewManager()
 	wsHandler := handlers.NewWSHandler(manager, deviceUseCase, processor)
+
 	cmdHandler := httpHandler.NewCommandHandler(manager, commandsUseCase)
 	cacheHandler := handlers.NewCacheHandler(processor)
 
@@ -64,6 +65,7 @@ func (s *Server) Start() {
 			devices.GET("", deviceHandler.GetAllDevices)
 			devices.GET("/:id/data", deviceHandler.GetDeviceDataByDeviceID)
 			devices.GET("/:id/modules", deviceModuleHandler.GetDeviceModulesByDeviceID)
+			devices.GET("/:id/commands", cmdHandler.GetDeviceCommands) // Get pending commands for device
 			devices.GET("/:id", deviceHandler.GetDevice)
 			devices.PUT("/:id", deviceHandler.UpdateDevice)
 			devices.DELETE("/:id", deviceHandler.DeleteDevice)
