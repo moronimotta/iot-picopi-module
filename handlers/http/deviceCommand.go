@@ -106,7 +106,58 @@ func (h *CommandHandler) Poll(c *gin.Context) {
 		})
 	}
 	_ = h.cmdUC.MarkSent(ids)
-	c.JSON(http.StatusOK, gin.H{"commands": safe, "count": len(safe)})
+	c.JSON(http.StatusOK, gin.H{"data": safe, "count": len(safe)})
+}
+
+// GET /api/v1/devices/:id/commands?status=pending
+// REST endpoint for fetching device commands
+func (h *CommandHandler) GetDeviceCommands(c *gin.Context) {
+	deviceID := c.Param("id")
+	status := c.DefaultQuery("status", "pending")
+
+	// optional limit
+	limit := 10
+	if l := c.Query("limit"); l != "" {
+		if v, err := strconv.Atoi(l); err == nil && v > 0 {
+			limit = v
+		}
+	}
+
+	// For now, only support pending status
+	if status != "pending" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "only status=pending is supported"})
+		return
+	}
+
+	cmds, err := h.cmdUC.Poll(deviceID, limit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// mark as sent and format response
+	ids := make([]string, 0, len(cmds))
+	safe := make([]map[string]interface{}, 0, len(cmds))
+	for _, c0 := range cmds {
+		ids = append(ids, c0.ID)
+		// parse params JSON
+		var p interface{}
+		if c0.Params != "" && json.Valid([]byte(c0.Params)) {
+			_ = json.Unmarshal([]byte(c0.Params), &p)
+		} else {
+			p = map[string]interface{}{}
+		}
+		safe = append(safe, map[string]interface{}{
+			"id":               c0.ID,
+			"command":          c0.Command,
+			"device_module_id": c0.DeviceModuleID,
+			"module_type":      "",
+			"status":           "pending",
+			"params":           p,
+		})
+	}
+	_ = h.cmdUC.MarkSent(ids)
+	c.JSON(http.StatusOK, gin.H{"data": safe, "count": len(safe)})
 }
 
 type ackReq struct {
