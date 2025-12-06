@@ -54,6 +54,7 @@ func (s *Server) Start() {
 
 	cmdHandler := httpHandler.NewCommandHandler(manager, commandsUseCase)
 	cacheHandler := handlers.NewCacheHandler(processor)
+	loginHandler := httpHandler.NewLoginHandler(s.db.GetDB())
 
 	// Setup API routes
 	api := s.app.Group("/api/v1")
@@ -96,6 +97,12 @@ func (s *Server) Start() {
 		{
 			users.GET("/:user_id/devices", deviceModuleHandler.GetDevicesByUserID)              // Get all devices by user_id
 			users.GET("/:user_id/device-modules", deviceModuleHandler.GetDeviceModulesByUserID) // Get all device modules by user_id
+		}
+
+		// Auth routes
+		auth := api.Group("/auth")
+		{
+			auth.POST("/login", loginHandler.Login) // Login endpoint for pico.exe
 		}
 
 		// Cache management endpoints
