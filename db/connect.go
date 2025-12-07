@@ -74,7 +74,7 @@ func Connect() (Database, error) {
 	log.Println("Connection pool configured for cloud database")
 
 	log.Println("Running database migrations...")
-	if err := db.AutoMigrate(&entities.Device{}, &entities.DeviceData{}, &entities.DeviceModule{}, &entities.Command{}, &entities.User{}); err != nil {
+	if err := db.AutoMigrate(&entities.Device{}, &entities.DeviceData{}, &entities.DeviceModule{}, &entities.Command{}); err != nil {
 		return nil, fmt.Errorf("failed to migrate database: %w", err)
 	}
 
