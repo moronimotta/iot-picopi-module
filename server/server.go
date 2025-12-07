@@ -74,7 +74,8 @@ func (s *Server) Start() {
 			devices.GET("", deviceHandler.GetAllDevices)
 			devices.GET("/:id/data", deviceHandler.GetDeviceDataByDeviceID)
 			devices.GET("/:id/modules", deviceModuleHandler.GetDeviceModulesByDeviceID)
-			devices.GET("/:id/commands", cmdHandler.GetDeviceCommands) // Get pending commands for device
+			devices.GET("/:id/commands", cmdHandler.GetDeviceCommands)         // Get pending commands for device
+			devices.POST("/:id/change-wifi", cmdHandler.ChangeWiFiCredentials) // Change WiFi credentials
 			devices.GET("/:id", deviceHandler.GetDevice)
 			devices.PUT("/:id", deviceHandler.UpdateDevice)
 			devices.DELETE("/:id", deviceHandler.DeleteDevice)
@@ -93,11 +94,12 @@ func (s *Server) Start() {
 		// Device module routes
 		deviceModules := api.Group("/device-modules")
 		{
-			deviceModules.POST("", deviceModuleHandler.CreateDeviceModule)       // Create device module
-			deviceModules.GET("", deviceModuleHandler.GetAllDeviceModules)       // Get all device modules
-			deviceModules.GET("/:id", deviceModuleHandler.GetDeviceModule)       // Get device module by ID
-			deviceModules.PUT("/:id", deviceModuleHandler.UpdateDeviceModule)    // Update device module
-			deviceModules.DELETE("/:id", deviceModuleHandler.DeleteDeviceModule) // Delete device module
+			deviceModules.POST("", deviceModuleHandler.CreateDeviceModule)         // Create device module
+			deviceModules.GET("", deviceModuleHandler.GetAllDeviceModules)         // Get all device modules
+			deviceModules.GET("/:id", deviceModuleHandler.GetDeviceModule)         // Get device module by ID
+			deviceModules.GET("/:id/latest", deviceModuleHandler.GetLatestReading) // Get latest reading for module
+			deviceModules.PUT("/:id", deviceModuleHandler.UpdateDeviceModule)      // Update device module
+			deviceModules.DELETE("/:id", deviceModuleHandler.DeleteDeviceModule)   // Delete device module
 		}
 
 		// User-specific routes
