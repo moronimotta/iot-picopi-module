@@ -2,7 +2,7 @@ package entities
 
 // User represents a user in the HomeNetAI system
 type User struct {
-	ID           string `gorm:"primaryKey" json:"id"`
+	ID           string `gorm:"type:text;primaryKey" json:"id"`
 	Username     string `gorm:"unique;not null" json:"username"`
 	Email        string `gorm:"unique;not null" json:"email"`
 	PasswordHash string `gorm:"not null" json:"-"`
