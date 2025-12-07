@@ -9,6 +9,7 @@ import (
 	"iot-server/usecases"
 	"iot-server/ws"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,6 +26,13 @@ func NewServer(database db.Database) *Server {
 }
 
 func (s *Server) Start() {
+	// Setup CORS middleware
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true // Allow all origins for development
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
+	s.app.Use(cors.New(config))
+
 	// Setup healthcheck route
 	s.app.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
