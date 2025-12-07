@@ -141,31 +141,32 @@ func loginUser(username, password string) tea.Cmd {
 
 		resp, err := client.Do(req)
 		if err != nil {
-			return errMsg{fmt.Errorf("login failed: %w", err)}
+			return errMsg{fmt.Errorf("authentication required - create an account at our website to proceed")}
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
-			return errMsg{fmt.Errorf("login failed: %s", string(body))}
+			return errMsg{fmt.Errorf("authentication required - create an account at our website to proceed")}
 		}
 
 		var result map[string]interface{}
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-			return errMsg{fmt.Errorf("failed to parse response: %w", err)}
+			return errMsg{fmt.Errorf("authentication required - create an account at our website to proceed")}
 		}
 
-		data, ok := result["data"].(map[string]interface{})
-		if !ok {
-			return errMsg{fmt.Errorf("invalid response format")}
+		// Check if response has success field
+		success, _ := result["success"].(bool)
+		if !success {
+			return errMsg{fmt.Errorf("authentication required - create an account at our website to proceed")}
 		}
 
-		userID, _ := data["user_id"].(string)
-		token, _ := data["token"].(string)
-
-		if userID == "" || token == "" {
-			return errMsg{fmt.Errorf("missing user_id or token")}
+		userID, ok := result["user_id"].(string)
+		if !ok || userID == "" {
+			return errMsg{fmt.Errorf("authentication required - create an account at our website to proceed")}
 		}
+
+		// Token is optional, use empty string if not provided
+		token, _ := result["token"].(string)
 
 		return loginSuccessMsg{userID: userID, token: token}
 	}
