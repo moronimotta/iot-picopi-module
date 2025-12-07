@@ -56,7 +56,7 @@ var (
 type step int
 
 const (
-	stepEnteringEmail step = iota
+	stepEnteringUsername step = iota
 	stepEnteringLoginPassword
 	stepLoggingIn
 	stepListingPicos
@@ -80,7 +80,7 @@ type model struct {
 	picoNetworks []network
 	cursor       int
 	selectedPico *network
-	email        string
+	username     string
 	loginPass    string
 	userID       string
 	authToken    string
@@ -106,7 +106,7 @@ func (e errMsg) Error() string { return e.err.Error() }
 
 func initialModel() model {
 	return model{
-		step:         stepEnteringEmail,
+		step:         stepEnteringUsername,
 		networks:     []network{},
 		picoNetworks: []network{},
 		cursor:       0,
@@ -124,12 +124,12 @@ func tickScan() tea.Cmd {
 	})
 }
 
-func loginUser(email, password string) tea.Cmd {
+func loginUser(username, password string) tea.Cmd {
 	return func() tea.Msg {
 		client := &http.Client{Timeout: 10 * time.Second}
 
 		payload := map[string]string{
-			"email":    email,
+			"username": username,
 			"password": password,
 		}
 
@@ -335,15 +335,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		default:
-			if m.step == stepEnteringEmail || m.step == stepEnteringLoginPassword || m.step == stepEnteringSSID || m.step == stepEnteringPassword {
+			if m.step == stepEnteringUsername || m.step == stepEnteringLoginPassword || m.step == stepEnteringSSID || m.step == stepEnteringPassword {
 				m.currentInput += msg.String()
 			}
 
 		case "enter":
 			switch m.step {
-			case stepEnteringEmail:
+			case stepEnteringUsername:
 				if m.currentInput != "" {
-					m.email = m.currentInput
+					m.username = m.currentInput
 					m.currentInput = ""
 					m.step = stepEnteringLoginPassword
 				}
@@ -354,7 +354,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.currentInput = ""
 					m.step = stepLoggingIn
 					m.message = "Logging in..."
-					return m, loginUser(m.email, m.loginPass)
+					return m, loginUser(m.username, m.loginPass)
 				}
 
 			case stepSelectingPico:
@@ -391,7 +391,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.userID = msg.userID
 		m.authToken = msg.token
 		m.step = stepListingPicos
-		m.message = successStyle.Render("✓ Logged in as " + m.email)
+		m.message = successStyle.Render("✓ Logged in as " + m.username)
 		return m, listNetworks
 
 	case networksFoundMsg:
@@ -441,8 +441,8 @@ func (m model) View() string {
 	s.WriteString(titleStyle.Render("🔧 Pico WiFi Setup Tool\n\n"))
 
 	switch m.step {
-	case stepEnteringEmail:
-		s.WriteString(promptStyle.Render("Enter your email:\n"))
+	case stepEnteringUsername:
+		s.WriteString(promptStyle.Render("Enter your username:\n"))
 		s.WriteString(inputStyle.Render("> " + m.currentInput))
 		s.WriteString("\n\nPress Enter\n")
 
