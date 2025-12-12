@@ -8,14 +8,16 @@ import (
 )
 
 type DeviceModule struct {
-	ID        string         `gorm:"primaryKey" json:"id"`
-	DeviceID  string         `gorm:"index" json:"device_id"`
-	UserID    string         `json:"user_id"`
-	Name      string         `json:"name"`
-	Status    string         `json:"status"` //
-	CreatedAt string         `json:"created_at"`
-	UpdatedAt string         `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	ID         string         `gorm:"primaryKey" json:"id"`
+	DeviceID   string         `gorm:"index" json:"device_id"`
+	UserID     string         `json:"user_id"`
+	Name       string         `json:"name"`
+	ModuleType string         `json:"module_type"`
+	Commands   string         `gorm:"type:jsonb" json:"commands"` // JSON array of command names
+	Status     string         `json:"status"`
+	CreatedAt  string         `json:"created_at"`
+	UpdatedAt  string         `json:"updated_at"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 }
 
 func (dm *DeviceModule) BeforeCreate(tx *gorm.DB) (err error) {

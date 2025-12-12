@@ -326,8 +326,8 @@ def RegisterDeviceHTTPS(user_id):
     
     return None
 
-def RegisterModuleHTTPS(device_id, user_id, module_type, module_name):
-    """Register a device module (thermostat or weather_sensor)"""
+def RegisterModuleHTTPS(device_id, user_id, module_type, module_name, commands):
+    """Register a device module with its supported commands"""
     if not check_tls():
         print(f"✗ TLS not available for {module_type}")
         return None
@@ -336,7 +336,8 @@ def RegisterModuleHTTPS(device_id, user_id, module_type, module_name):
         "device_id": device_id,
         "user_id": user_id,
         "module_type": module_type,
-        "name": module_name
+        "name": module_name,
+        "commands": json.dumps(commands)  # Send as JSON string
     }
     body = json.dumps(payload)
     
@@ -452,13 +453,15 @@ def Phase2_RegisterDevice():
     
     modules = {}
     
-    # Register door module
-    door_id = RegisterModuleHTTPS(device_id, config["user_id"], "DOOR", "Main Door Sensor")
+    # Register door module with its commands
+    door_commands = ["OPEN_DOOR", "CLOSE_DOOR"]
+    door_id = RegisterModuleHTTPS(device_id, config["user_id"], "DOOR", "Main Door Sensor", door_commands)
     if door_id:
         modules["door_id"] = door_id
     
-    # Register weather sensor module
-    weather_id = RegisterModuleHTTPS(device_id, config["user_id"], "WEATHER_SENSOR", "Outdoor Weather Station")
+    # Register weather sensor module (no commands, read-only)
+    weather_commands = []  # No commands for read-only sensor
+    weather_id = RegisterModuleHTTPS(device_id, config["user_id"], "WEATHER_SENSOR", "Outdoor Weather Station", weather_commands)
     if weather_id:
         modules["weather_sensor_id"] = weather_id
     
